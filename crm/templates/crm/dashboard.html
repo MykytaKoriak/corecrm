@@ -1,0 +1,40 @@
+{% extends "crm/base.html" %}
+{% block title %}Dashboard · CRM{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Dashboard</h1><p>Ключевые показатели, задачи и последние события.</p></div>
+  <div class="head-actions"><a class="btn secondary-btn" href="{% url 'crm:client_create' %}">Новый клиент</a><a class="btn primary-btn" href="{% url 'crm:deal_create' %}">Новая сделка</a></div>
+</div>
+<section class="kpi-grid">
+  <div class="kpi-card"><span>Клиенты</span><strong>{{ clients_count }}</strong><small>активная база</small></div>
+  <div class="kpi-card"><span>Сделки</span><strong>{{ deals_count }}</strong><small>в воронке</small></div>
+  <div class="kpi-card"><span>Заказы в работе</span><strong>{{ open_orders_count }}</strong><small>не закрыты</small></div>
+  <div class="kpi-card"><span>Продажи</span><strong>{{ sales_total }}</strong><small>по заказам</small></div>
+</section>
+<section class="dashboard-grid">
+  <div class="surface">
+    <div class="section-head"><h2>Новые заявки</h2><a href="{% url 'crm:deals' %}">Воронка</a></div>
+    {% for deal in new_deals %}<a class="list-row" href="{{ deal.get_absolute_url }}"><div><strong>{{ deal.title }}</strong><small>{{ deal.client }} · {{ deal.stage }}</small></div><span>{{ deal.amount }}</span></a>{% empty %}<p class="empty">Новых сделок нет.</p>{% endfor %}
+  </div>
+  <div class="surface">
+    <div class="section-head"><h2>Просроченные задачи</h2><a href="{% url 'crm:tasks' %}?status=active">Задачи</a></div>
+    {% for task in overdue_tasks %}<a class="list-row" href="{{ task.get_absolute_url }}"><div><strong>{{ task.title }}</strong><small>{{ task.deadline|date:"d.m.Y H:i" }} · {{ task.assigned_to }}</small></div><span class="badge-soft danger">{{ task.get_priority_display }}</span></a>{% empty %}<p class="empty">Просрочек нет.</p>{% endfor %}
+  </div>
+  <div class="surface">
+    <div class="section-head"><h2>Заказы в работе</h2><a href="{% url 'crm:orders' %}">Все</a></div>
+    {% for order in active_orders %}<a class="list-row" href="{{ order.get_absolute_url }}"><div><strong>{{ order.number }}</strong><small>{{ order.client }} · {{ order.get_work_status_display }}</small></div><span>{{ order.total }}</span></a>{% empty %}<p class="empty">Активных заказов нет.</p>{% endfor %}
+  </div>
+  <div class="surface">
+    <div class="section-head"><h2>История</h2><a href="{% url 'crm:settings' %}">Лог</a></div>
+    {% for item in activity %}<div class="list-row muted-row"><div><strong>{{ item.object_repr }}</strong><small>{{ item.get_action_display }} · {{ item.created_at|date:"d.m H:i" }}</small></div></div>{% empty %}<p class="empty">История пока пустая.</p>{% endfor %}
+  </div>
+</section>
+<section class="surface mt-4">
+  <div class="section-head"><h2>Статистика воронки</h2></div>
+  <div class="stage-stats">
+    {% for row in deal_stats %}
+    <div class="stage-stat"><span style="--dot: {{ row.stage__color|default:'#64748b' }}"></span><strong>{{ row.stage__name|default:"Без этапа" }}</strong><small>{{ row.count }} сделок · {{ row.amount|default:0 }}</small></div>
+    {% empty %}<p class="empty">Данных пока нет.</p>{% endfor %}
+  </div>
+</section>
+{% endblock %}

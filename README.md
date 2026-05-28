@@ -1,53 +1,69 @@
 # CRM MVP
 
-Модульный Django-монолит CRM по ТЗ из Excel.
+Новый MVP CRM на Django с одним базовым Django app `crm`.
+
+## Архитектура
+
+Базовая CRM реализована внутри одного приложения:
+
+```text
+config/
+crm/
+  models/
+  views/
+  forms/
+  services/
+  api/
+  templates/crm/
+  static/crm/
+```
+
+Отдельные Django apps для клиентов, сделок, заказов, товаров, задач и уведомлений не используются.
 
 ## Стек
 
-- Django 5
+- Django
 - Django REST Framework
 - PostgreSQL
 - Redis
-- Celery + Celery Beat
-- Django Channels
-- Django Templates + HTMX + Alpine.js + Bootstrap 5
+- Celery
+- Django Templates
+- HTMX
+- Alpine.js
+- Bootstrap 5 + кастомный CSS
 
-React, Next.js, Vue и микросервисы не используются.
+React, Next.js и Vue не используются.
 
-## Реализовано в MVP
+## Что входит в MVP
 
-- вход в систему через стандартную Django-авторизацию;
-- пользователи и роли: администратор, руководитель, менеджер, склад / производство;
-- карточки клиентов с контактами, адресами, ответственным, тегами и файлами;
-- воронка сделок с этапами из ТЗ и drag-and-drop сменой этапа;
-- сделки с товарами и автоматическим подсчетом суммы;
-- создание заказа из сделки;
-- заказы со статусами оплаты, доставки и работы;
-- каталог товаров и категорий;
-- задачи с дедлайном, приоритетом, статусом и уведомлениями;
-- внутренний центр уведомлений;
-- история действий пользователей;
-- базовая структура интеграций: Новая Почта, Telegram, Instagram, телефония;
-- dashboard и базовая аналитика;
-- admin-настройки для этапов, статусов, пользовательских полей и модулей;
+- Авторизация пользователей.
+- Профили и роли: администратор, руководитель, менеджер, склад / производство.
+- Красивый layout: sidebar, topbar, карточки, таблицы, фильтры, badge.
+- Dashboard с KPI, новыми сделками, просроченными задачами, заказами и историей.
+- CRUD для клиентов.
+- CRUD для сделок и pipeline с drag-and-drop сменой этапа.
+- CRUD для заказов и позиций заказов.
+- CRUD для товаров.
+- CRUD для задач.
+- Центр внутренних уведомлений.
+- История действий пользователей.
+- Настройки: этапы, пользовательские поля, заготовки интеграций.
 - REST API под `/api/`.
+- Docker Compose для Django, PostgreSQL, Redis и Celery.
 
 ## Запуск через Docker Compose
-
-1. Скопируйте `.env.example` в `.env` при необходимости и поменяйте `SECRET_KEY`.
-2. Запустите контейнеры:
 
 ```bash
 docker compose up --build
 ```
 
-3. Создайте администратора:
+В другом терминале создайте администратора:
 
 ```bash
 docker compose exec web python manage.py createsuperuser
 ```
 
-4. Откройте:
+Откройте:
 
 - CRM: http://localhost:8000/
 - Admin: http://localhost:8000/admin/
@@ -64,37 +80,35 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Если `DATABASE_URL` не задан, проект использует SQLite для локальной разработки.
+Если `DATABASE_URL` не задан, используется SQLite. В Docker используется PostgreSQL из `docker-compose.yml`.
 
-## Модули проекта
+## Проверка после запуска
 
-- `users` - пользователи и роли;
-- `dashboard` - главный экран и KPI;
-- `clients` - база клиентов;
-- `deals` - воронка и сделки;
-- `orders` - заказы;
-- `products` - товары и категории;
-- `tasks` - задачи;
-- `notifications` - внутренние уведомления;
-- `integrations` - подготовка интеграций;
-- `analytics` - отчеты;
-- `activity_log` - история действий;
-- `crm_settings` - настройки CRM.
+1. Войти через `/login/`.
+2. Открыть dashboard `/`.
+3. Создать клиента `/clients/new/`.
+4. Создать товар `/products/new/`.
+5. Создать сделку `/deals/new/`.
+6. Перетащить сделку между этапами на `/deals/`.
+7. Создать заказ из карточки сделки.
+8. Добавить позицию в заказ.
+9. Создать задачу `/tasks/new/`.
+10. Проверить уведомления `/notifications/`.
+11. Проверить историю в `/settings/`.
+12. Проверить API `/api/clients/`.
 
-## API
+## Celery
 
-Все основные сущности доступны через DRF router:
+Worker:
 
-- `/api/users/`
-- `/api/clients/`
-- `/api/products/`
-- `/api/deal-stages/`
-- `/api/deals/`
-- `/api/orders/`
-- `/api/tasks/`
-- `/api/notifications/`
-- `/api/integrations/providers/`
-- `/api/integrations/events/`
-- `/api/integrations/shipments/`
+```bash
+celery -A config worker -l info
+```
 
-API использует session/basic authentication и требует авторизации.
+Beat:
+
+```bash
+celery -A config beat -l info
+```
+
+Celery использует `REDIS_URL`.

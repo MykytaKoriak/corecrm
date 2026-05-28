@@ -1,0 +1,9 @@
+{% extends "crm/base.html" %}
+{% block title %}Задачи · CRM{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Задачи</h1><p>Дедлайны, приоритеты и ежедневная работа команды.</p></div><a class="btn primary-btn" href="{% url 'crm:task_create' %}">Новая задача</a></div>
+<form class="filter-bar surface" method="get"><input name="q" value="{{ request.GET.q }}" placeholder="Название, описание, клиент"><select name="status"><option value="">Все статусы</option><option value="active">Активные</option><option value="done">Выполненные</option><option value="canceled">Отмененные</option></select><select name="priority"><option value="">Любой приоритет</option><option value="high">Высокий</option><option value="medium">Средний</option><option value="low">Низкий</option></select><button class="btn secondary-btn">Фильтр</button></form>
+<div class="surface table-card"><table class="data-table"><thead><tr><th>Задача</th><th>Ответственный</th><th>Дедлайн</th><th>Клиент/сделка</th><th>Приоритет</th><th></th></tr></thead><tbody>
+{% for task in tasks %}<tr><td><a class="table-title" href="{{ task.get_absolute_url }}">{{ task.title }}</a><small>{{ task.get_status_display }}</small></td><td>{{ task.assigned_to|default:"-" }}</td><td>{{ task.deadline|date:"d.m.Y H:i"|default:"-" }}</td><td>{{ task.client|default:"-" }}{% if task.deal %}<small>{{ task.deal }}</small>{% endif %}</td><td><span class="badge-soft {{ task.priority }}">{{ task.get_priority_display }}</span></td><td class="text-end">{% if task.status == "active" %}<form method="post" action="{% url 'crm:task_complete' task.pk %}">{% csrf_token %}<button class="btn mini-btn">Готово</button></form>{% endif %}</td></tr>{% empty %}<tr><td colspan="6" class="empty">Задач нет.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

@@ -1,0 +1,6 @@
+{% extends "crm/base.html" %}
+{% block title %}{{ task.title }} · CRM{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>{{ task.title }}</h1><p>{{ task.get_status_display }} · {{ task.get_priority_display }} · {{ task.assigned_to|default:"-" }}</p></div><div class="head-actions">{% if task.status == "active" %}<form method="post" action="{% url 'crm:task_complete' task.pk %}">{% csrf_token %}<button class="btn primary-btn">Выполнить</button></form>{% endif %}<a class="btn secondary-btn" href="{% url 'crm:task_update' task.pk %}">Редактировать</a></div></div>
+<div class="detail-grid"><section class="surface hero-card"><div class="avatar-xl task">{{ task.deadline|date:"d" }}</div><div><span class="badge-soft {{ task.priority }}">{{ task.get_priority_display }}</span><h2>{{ task.deadline|date:"d.m.Y H:i"|default:"Без дедлайна" }}</h2><p>{{ task.description|default:"Описания нет." }}</p></div></section><section class="surface"><div class="section-head"><h2>Связи</h2></div><dl class="info-list"><dt>Клиент</dt><dd>{% if task.client %}<a href="{{ task.client.get_absolute_url }}">{{ task.client }}</a>{% else %}-{% endif %}</dd><dt>Сделка</dt><dd>{% if task.deal %}<a href="{{ task.deal.get_absolute_url }}">{{ task.deal }}</a>{% else %}-{% endif %}</dd><dt>Поставил</dt><dd>{{ task.created_by|default:"-" }}</dd></dl></section></div>
+{% endblock %}

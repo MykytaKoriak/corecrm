@@ -1,0 +1,11 @@
+{% extends "crm/base.html" %}
+{% block title %}Настройки · CRM{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Настройки</h1><p>Этапы, пользовательские поля, интеграции и история действий.</p></div><a class="btn secondary-btn" href="/admin/">Django Admin</a></div>
+<div class="settings-grid">
+  <section class="surface"><div class="section-head"><h2>Этапы воронки</h2></div>{% for stage in deal_stages %}<div class="settings-row"><span><i style="background:{{ stage.color }}"></i>{{ stage.order }}. {{ stage.name }}</span><small>{% if stage.is_won %}успех{% elif stage.is_lost %}отказ{% else %}рабочий{% endif %}</small></div>{% empty %}<p class="empty">Этапы не настроены.</p>{% endfor %}</section>
+  <section class="surface"><div class="section-head"><h2>Интеграции</h2></div>{% for item in integrations %}<div class="settings-row"><span>{{ item.get_provider_display }}</span><span class="badge-soft {% if item.is_enabled %}active{% endif %}">{% if item.is_enabled %}включено{% else %}заготовка{% endif %}</span></div>{% empty %}<p class="empty">Интеграции будут созданы миграцией.</p>{% endfor %}</section>
+  <section class="surface"><div class="section-head"><h2>Пользовательские поля</h2></div>{% for field in custom_fields %}<div class="settings-row"><span>{{ field.entity }} · {{ field.name }}</span><small>{{ field.get_field_type_display }}</small></div>{% empty %}<p class="empty">Поля добавляются через служебную админку.</p>{% endfor %}</section>
+  <section class="surface"><div class="section-head"><h2>История действий</h2></div>{% for item in activity %}<div class="timeline-item"><strong>{{ item.object_repr }}</strong><small>{{ item.get_action_display }} · {{ item.created_at|date:"d.m.Y H:i" }} · {{ item.user|default:"Система" }}</small></div>{% empty %}<p class="empty">История пока пустая.</p>{% endfor %}</section>
+</div>
+{% endblock %}

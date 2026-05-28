@@ -1,0 +1,29 @@
+{% extends "crm/base.html" %}
+{% block title %}Вход · CRM{% endblock %}
+{% block auth_content %}
+<main class="login-page">
+  <section class="login-visual">
+    <div class="login-brand"><span class="brand-mark">C</span>CRM Studio</div>
+    <h1>Современная CRM для ежедневной работы менеджера</h1>
+    <p>Клиенты, сделки, заказы, задачи и уведомления в одном аккуратном рабочем пространстве.</p>
+    <div class="login-metrics">
+      <div><strong>360°</strong><span>карточка клиента</span></div>
+      <div><strong>8</strong><span>этапов воронки</span></div>
+      <div><strong>1</strong><span>Django app</span></div>
+    </div>
+  </section>
+  <section class="login-panel">
+    <form method="post" class="login-card">
+      {% csrf_token %}
+      <h2>Войти</h2>
+      <p>Используйте учетную запись CRM.</p>
+      {% if form.errors %}<div class="form-error">Проверьте логин и пароль.</div>{% endif %}
+      <label for="{{ form.username.id_for_label }}">Логин</label>
+      {{ form.username }}
+      <label for="{{ form.password.id_for_label }}">Пароль</label>
+      {{ form.password }}
+      <button class="btn primary-btn w-100">Войти в CRM</button>
+    </form>
+  </section>
+</main>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "crm/base.html" %}
+{% block title %}Клиенты · CRM{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Клиенты</h1><p>Единая база клиентов, контактов и связанных сделок.</p></div><a class="btn primary-btn" href="{% url 'crm:client_create' %}">Новый клиент</a></div>
+<form class="filter-bar surface" method="get">
+  <input name="q" value="{{ request.GET.q }}" placeholder="Поиск по имени, телефону, email">
+  <select name="status"><option value="">Все статусы</option><option value="new">Новый</option><option value="active">Активный</option><option value="vip">VIP</option><option value="archived">Архив</option></select>
+  <button class="btn secondary-btn">Фильтр</button>
+</form>
+<div class="surface table-card">
+  <table class="data-table">
+    <thead><tr><th>Клиент</th><th>Контакты</th><th>Ответственный</th><th>Теги</th><th>Обновлен</th><th></th></tr></thead>
+    <tbody>
+    {% for client in clients %}
+    <tr>
+      <td><a class="table-title" href="{{ client.get_absolute_url }}">{{ client.name }}</a><small>{{ client.get_client_type_display }}</small></td>
+      <td><span>{{ client.phone|default:"-" }}</span><small>{{ client.email|default:"" }}</small></td>
+      <td>{{ client.owner|default:"-" }}</td>
+      <td>{% for tag in client.tags %}<span class="badge-soft">{{ tag }}</span>{% empty %}<span class="muted">-</span>{% endfor %}</td>
+      <td>{{ client.updated_at|date:"d.m.Y" }}</td>
+      <td class="text-end"><span class="badge-soft {{ client.status }}">{{ client.get_status_display }}</span></td>
+    </tr>
+    {% empty %}<tr><td colspan="6" class="empty">Клиентов пока нет.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "crm/base.html" %}
+{% block title %}{{ client.name }} · CRM{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>{{ client.name }}</h1><p>{{ client.get_client_type_display }} · {{ client.owner|default:"ответственный не назначен" }}</p></div>
+  <div class="head-actions"><a class="btn secondary-btn" href="{% url 'crm:client_update' client.pk %}">Редактировать</a><a class="btn primary-btn" href="{% url 'crm:deal_create' %}?client={{ client.pk }}">Новая сделка</a></div>
+</div>
+<div class="detail-grid">
+  <section class="surface hero-card">
+    <div class="avatar-xl">{{ client.name|slice:":1"|upper }}</div>
+    <div><span class="badge-soft {{ client.status }}">{{ client.get_status_display }}</span><h2>{{ client.name }}</h2><p>{{ client.notes|default:"Заметок пока нет." }}</p></div>
+  </section>
+  <section class="surface">
+    <div class="section-head"><h2>Контакты</h2></div>
+    <dl class="info-list">
+      <dt>Телефон</dt><dd>{{ client.phone|default:"-" }}</dd>
+      <dt>Email</dt><dd>{{ client.email|default:"-" }}</dd>
+      <dt>Telegram</dt><dd>{{ client.telegram|default:"-" }}</dd>
+      <dt>Instagram</dt><dd>{{ client.instagram|default:"-" }}</dd>
+      <dt>Адрес</dt><dd>{{ client.delivery_address|linebreaksbr|default:"-" }}</dd>
+    </dl>
+  </section>
+  <section class="surface">
+    <div class="section-head"><h2>Сделки</h2></div>
+    {% for deal in client.deals.all %}<a class="list-row" href="{{ deal.get_absolute_url }}"><div><strong>{{ deal.title }}</strong><small>{{ deal.stage }} · {{ deal.owner|default:"-" }}</small></div><span>{{ deal.amount }}</span></a>{% empty %}<p class="empty">Сделок нет.</p>{% endfor %}
+  </section>
+  <section class="surface">
+    <div class="section-head"><h2>Заказы</h2></div>
+    {% for order in client.orders.all %}<a class="list-row" href="{{ order.get_absolute_url }}"><div><strong>{{ order.number }}</strong><small>{{ order.get_work_status_display }}</small></div><span>{{ order.total }}</span></a>{% empty %}<p class="empty">Заказов нет.</p>{% endfor %}
+  </section>
+  <section class="surface wide">
+    <div class="section-head"><h2>История</h2></div>
+    {% for item in activity %}<div class="timeline-item"><strong>{{ item.get_action_display }}</strong><small>{{ item.created_at|date:"d.m.Y H:i" }} · {{ item.user|default:"Система" }}</small></div>{% empty %}<p class="empty">История пока пустая.</p>{% endfor %}
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "crm/base.html" %}
+{% block title %}Воронка · CRM{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Воронка сделок</h1><p>Перетаскивайте карточки между этапами.</p></div><div class="head-actions"><a class="btn secondary-btn" href="{% url 'crm:deal_list' %}">Списком</a><a class="btn primary-btn" href="{% url 'crm:deal_create' %}">Новая сделка</a></div></div>
+<div class="pipeline" x-data="{dragged:null}">
+  {% csrf_token %}
+  {% for stage in stages %}
+  <section class="pipe-column" style="--stage: {{ stage.color }}">
+    <header><div><span>{{ stage.name }}</span><small>{{ stage.deals.count }} сделок</small></div></header>
+    <div class="pipe-drop" @dragover.prevent @drop.prevent="if (dragged) { htmx.ajax('POST', dragged.dataset.url, {target: 'body', values: {stage: '{{ stage.pk }}'}}) }">
+      {% for deal in stage.deals.all %}
+      <article class="pipe-card" draggable="true" @dragstart="dragged=$event.currentTarget" data-url="{% url 'crm:deal_stage_update' deal.pk %}">
+        <a href="{{ deal.get_absolute_url }}">{{ deal.title }}</a>
+        <span>{{ deal.client }}</span>
+        <footer><strong>{{ deal.amount }}</strong><small>{{ deal.owner|default:"-" }}</small></footer>
+      </article>
+      {% empty %}<div class="empty-drop">Перетащите сделку сюда</div>{% endfor %}
+    </div>
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}
