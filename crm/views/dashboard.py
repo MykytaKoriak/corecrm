@@ -5,7 +5,7 @@ from django.views.generic import TemplateView
 
 from crm.models import ActivityLog, Client, Deal, Notification, Order, Task
 
-from .mixins import CRMLoginRequiredMixin
+from .mixins import CRMLoginRequiredMixin, scope_queryset_for_user
 
 
 class LoginView(auth_views.LoginView):
@@ -23,17 +23,21 @@ class DashboardView(CRMLoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         now = timezone.now()
+        clients = scope_queryset_for_user(Client.objects.all(), self.request.user)
+        deals = scope_queryset_for_user(Deal.objects.all(), self.request.user)
+        orders = scope_queryset_for_user(Order.objects.all(), self.request.user)
+        tasks = scope_queryset_for_user(Task.objects.all(), self.request.user)
         context.update(
             {
-                "clients_count": Client.objects.count(),
-                "deals_count": Deal.objects.count(),
-                "open_orders_count": Order.objects.exclude(work_status=Order.WorkStatus.CLOSED).count(),
-                "sales_total": Order.objects.aggregate(total=Sum("total"))["total"] or 0,
-                "new_deals": Deal.objects.select_related("client", "stage", "owner").order_by("-created_at")[:6],
-                "overdue_tasks": Task.objects.filter(status=Task.Status.ACTIVE, deadline__lt=now).select_related("assigned_to")[:6],
-                "active_orders": Order.objects.exclude(work_status=Order.WorkStatus.CLOSED).select_related("client")[:6],
+                "clients_count": clients.count(),
+                "deals_count": deals.count(),
+                "open_orders_count": orders.exclude(work_status=Order.WorkStatus.CLOSED).count(),
+                "sales_total": orders.aggregate(total=Sum("total"))["total"] or 0,
+                "new_deals": deals.select_related("client", "stage", "owner").order_by("-created_at")[:6],
+                "overdue_tasks": tasks.filter(status=Task.Status.ACTIVE, deadline__lt=now).select_related("assigned_to")[:6],
+                "active_orders": orders.exclude(work_status=Order.WorkStatus.CLOSED).select_related("client")[:6],
                 "notifications": Notification.objects.filter(recipient=self.request.user, read_at__isnull=True)[:6],
-                "deal_stats": Deal.objects.values("stage__name", "stage__color").annotate(count=Count("id"), amount=Sum("amount")).order_by("stage__order"),
+                "deal_stats": deals.values("stage__name", "stage__color").annotate(count=Count("id"), amount=Sum("amount")).order_by("stage__order"),
                 "activity": ActivityLog.objects.select_related("user", "content_type")[:8],
             }
         )

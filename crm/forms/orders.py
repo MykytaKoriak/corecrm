@@ -1,6 +1,6 @@
 from django import forms
 
-from crm.models import Order, OrderItem
+from crm.models import Order, OrderFile, OrderItem
 
 from .base import StyledFormMixin
 
@@ -16,3 +16,9 @@ class OrderItemForm(StyledFormMixin, forms.ModelForm):
     class Meta:
         model = OrderItem
         fields = ["product", "name", "quantity", "price", "discount"]
+
+
+class OrderFileForm(StyledFormMixin, forms.ModelForm):
+    class Meta:
+        model = OrderFile
+        fields = ["title", "file", "comment"]

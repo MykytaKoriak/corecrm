@@ -1,6 +1,6 @@
 from django import forms
 
-from crm.models import Deal
+from crm.models import Deal, DealItem
 
 from .base import StyledFormMixin
 
@@ -13,3 +13,9 @@ class DealForm(StyledFormMixin, forms.ModelForm):
             "expected_close_date": forms.DateInput(attrs={"type": "date"}),
             "description": forms.Textarea(attrs={"rows": 4}),
         }
+
+
+class DealItemForm(StyledFormMixin, forms.ModelForm):
+    class Meta:
+        model = DealItem
+        fields = ["product", "name", "quantity", "price", "discount"]

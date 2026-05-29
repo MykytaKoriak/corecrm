@@ -8,7 +8,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 from crm.forms import TaskForm
 from crm.models import Task
 
-from .mixins import CRMLoginRequiredMixin, SearchFilterMixin
+from .mixins import CRMLoginRequiredMixin, SearchFilterMixin, scope_queryset_for_user
 
 
 class TaskListView(CRMLoginRequiredMixin, SearchFilterMixin, ListView):
@@ -57,7 +57,8 @@ class TaskDeleteView(CRMLoginRequiredMixin, DeleteView):
 @require_POST
 @login_required
 def complete_task(request, pk):
-    task = get_object_or_404(Task, pk=pk)
+    tasks = scope_queryset_for_user(Task.objects.all(), request.user)
+    task = get_object_or_404(tasks, pk=pk)
     task.status = Task.Status.DONE
     task.completed_at = timezone.now()
     task.save(update_fields=["status", "completed_at", "updated_at"])

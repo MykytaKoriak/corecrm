@@ -1,6 +1,6 @@
 from django import forms
 
-from crm.models import Client, ContactPerson
+from crm.models import Client, ClientFile, ContactPerson
 
 from .base import StyledFormMixin
 
@@ -66,3 +66,9 @@ class ContactPersonForm(StyledFormMixin, forms.ModelForm):
     class Meta:
         model = ContactPerson
         fields = ["name", "position", "phone", "email", "telegram", "is_primary"]
+
+
+class ClientFileForm(StyledFormMixin, forms.ModelForm):
+    class Meta:
+        model = ClientFile
+        fields = ["title", "file", "comment"]

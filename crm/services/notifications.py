@@ -2,7 +2,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 
-from crm.models import Deal, Notification, Task
+from crm.models import CallLog, Deal, InboxMessage, Notification, Shipment, Task
 
 
 def notification_context(request):
@@ -40,6 +40,56 @@ def notify_new_deal(sender, instance, created, **kwargs):
             Notification.Kind.DEAL,
             instance.get_absolute_url(),
         )
+
+
+@receiver(post_save, sender=InboxMessage)
+def notify_inbox_message(sender, instance, created, **kwargs):
+    if created and instance.client and instance.client.owner:
+        notify_user(
+            instance.client.owner,
+            f"Новое сообщение: {instance.sender_name or instance.sender_handle}",
+            instance.text[:240],
+            Notification.Kind.INFO,
+            instance.get_absolute_url(),
+        )
+
+
+@receiver(post_save, sender=Shipment)
+def notify_returned_shipment(sender, instance, created, **kwargs):
+    if instance.status == Shipment.Status.RETURNED and instance.order.owner:
+        notify_user(
+            instance.order.owner,
+            f"Возврат по заказу {instance.order.number}",
+            f"Отправление {instance.tracking_number} отмечено как возврат.",
+            Notification.Kind.WARNING,
+            instance.order.get_absolute_url(),
+        )
+
+
+@receiver(post_save, sender=CallLog)
+def create_task_for_missed_call(sender, instance, created, **kwargs):
+    if not created or instance.status != CallLog.Status.MISSED or instance.task_created:
+        return
+    assignee = instance.assigned_to or (instance.client.owner if instance.client else None)
+    if not assignee:
+        return
+    task = Task.objects.create(
+        title=f"Перезвонить: {instance.phone}",
+        description=instance.comment or "Автоматическая задача по пропущенному звонку.",
+        assigned_to=assignee,
+        created_by=assignee,
+        client=instance.client,
+        priority=Task.Priority.HIGH,
+    )
+    instance.task_created = True
+    instance.save(update_fields=["task_created"])
+    notify_user(
+        assignee,
+        f"Пропущенный звонок: {instance.phone}",
+        f"Создана задача: {task.title}",
+        Notification.Kind.WARNING,
+        task.get_absolute_url(),
+    )
 
 
 def notify_overdue_tasks_now():

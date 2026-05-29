@@ -1,0 +1,7 @@
+{% extends "crm/base.html" %}
+{% block title %}Доставка · CRM{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Доставка</h1><p>ТТН Новой Почты, статусы посылок и возвраты.</p></div><a class="btn primary-btn" href="{% url 'crm:shipment_create' %}">Создать ТТН</a></div>
+<form class="filter-bar surface" method="get"><input name="q" value="{{ request.GET.q }}" placeholder="ТТН, заказ, клиент, город"><select name="status"><option value="">Все статусы</option><option value="draft">Черновик</option><option value="created">ТТН создана</option><option value="in_transit">В пути</option><option value="delivered">Доставлено</option><option value="returned">Возврат</option></select><button class="btn secondary-btn">Фильтр</button></form>
+<div class="surface table-card"><table class="data-table"><thead><tr><th>ТТН</th><th>Заказ</th><th>Клиент</th><th>Получатель</th><th>Статус</th></tr></thead><tbody>{% for item in shipments %}<tr><td><span class="table-title">{{ item.tracking_number }}</span><small>{{ item.get_provider_display }}</small></td><td><a href="{{ item.order.get_absolute_url }}">{{ item.order.number }}</a></td><td>{{ item.order.client }}</td><td>{{ item.recipient_city }} {{ item.recipient_warehouse }}</td><td><span class="badge-soft {{ item.status }}">{{ item.get_status_display }}</span></td></tr>{% empty %}<tr><td colspan="5" class="empty">Отправлений нет.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

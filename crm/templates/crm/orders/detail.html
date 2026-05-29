@@ -1,7 +1,7 @@
 {% extends "crm/base.html" %}
 {% block title %}{{ order.number }} · CRM{% endblock %}
 {% block content %}
-<div class="page-head"><div><h1>{{ order.number }}</h1><p>{{ order.client }} · {{ order.get_work_status_display }}</p></div><div class="head-actions"><a class="btn secondary-btn" href="{% url 'crm:order_update' order.pk %}">Редактировать</a><a class="btn primary-btn" href="{% url 'crm:order_item_create' order.pk %}">Добавить позицию</a></div></div>
+<div class="page-head"><div><h1>{{ order.number }}</h1><p>{{ order.client }} · {{ order.get_work_status_display }}</p></div><div class="head-actions"><a class="btn secondary-btn" href="{% url 'crm:order_update' order.pk %}">Редактировать</a><a class="btn secondary-btn" href="{% url 'crm:shipment_create' %}?order={{ order.pk }}">Создать ТТН</a><a class="btn primary-btn" href="{% url 'crm:order_item_create' order.pk %}">Добавить позицию</a></div></div>
 <div class="detail-grid">
   <section class="surface wide">
     <div class="section-head"><h2>Позиции заказа</h2></div>
@@ -10,6 +10,8 @@
   </section>
   <section class="surface"><div class="section-head"><h2>Статусы</h2></div><dl class="info-list"><dt>Оплата</dt><dd>{{ order.get_payment_status_display }}</dd><dt>Доставка</dt><dd>{{ order.get_delivery_status_display }}</dd><dt>Работа</dt><dd>{{ order.get_work_status_display }}</dd><dt>Сделка</dt><dd>{% if order.deal %}<a href="{{ order.deal.get_absolute_url }}">{{ order.deal }}</a>{% else %}-{% endif %}</dd></dl></section>
   <section class="surface"><div class="section-head"><h2>Комментарии</h2></div><p>{{ order.comments|linebreaksbr|default:"Комментариев нет." }}</p></section>
+  <section class="surface"><div class="section-head"><h2>Файлы</h2><a href="{% url 'crm:order_file_create' order.pk %}">Добавить</a></div>{% for file in order.files.all %}<a class="list-row" href="{{ file.file.url }}"><div><strong>{{ file.title|default:file.file.name }}</strong><small>{{ file.comment|default:"Без комментария" }}</small></div></a>{% empty %}<p class="empty">Файлы не добавлены.</p>{% endfor %}</section>
+  <section class="surface"><div class="section-head"><h2>Доставка</h2></div>{% for shipment in order.shipments.all %}<div class="list-row"><div><strong>{{ shipment.tracking_number }}</strong><small>{{ shipment.get_provider_display }} · {{ shipment.recipient_city }} {{ shipment.recipient_warehouse }}</small></div><span class="badge-soft {{ shipment.status }}">{{ shipment.get_status_display }}</span></div>{% empty %}<p class="empty">Отправления не созданы.</p>{% endfor %}</section>
   <section class="surface wide"><div class="section-head"><h2>История</h2></div>{% for item in activity %}<div class="timeline-item"><strong>{{ item.get_action_display }}</strong><small>{{ item.created_at|date:"d.m.Y H:i" }}</small></div>{% empty %}<p class="empty">История пока пустая.</p>{% endfor %}</section>
 </div>
 {% endblock %}

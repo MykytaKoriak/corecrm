@@ -81,3 +81,56 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class OrderFile(models.Model):
+    order = models.ForeignKey(Order, verbose_name="Заказ", on_delete=models.CASCADE, related_name="files")
+    file = models.FileField("Файл", upload_to="orders/%Y/%m/")
+    title = models.CharField("Название", max_length=180, blank=True)
+    comment = models.CharField("Комментарий", max_length=255, blank=True)
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="Загрузил", null=True, blank=True, on_delete=models.SET_NULL)
+    uploaded_at = models.DateTimeField("Загружен", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Файл заказа"
+        verbose_name_plural = "Файлы заказов"
+        ordering = ["-uploaded_at"]
+
+    def __str__(self):
+        return self.title or self.file.name
+
+
+class Shipment(models.Model):
+    class Provider(models.TextChoices):
+        NOVA_POSHTA = "nova_poshta", "Новая Почта"
+
+    class Status(models.TextChoices):
+        DRAFT = "draft", "Черновик"
+        CREATED = "created", "ТТН создана"
+        IN_TRANSIT = "in_transit", "В пути"
+        DELIVERED = "delivered", "Доставлено"
+        RETURNED = "returned", "Возврат"
+
+    order = models.ForeignKey(Order, verbose_name="Заказ", on_delete=models.CASCADE, related_name="shipments")
+    provider = models.CharField("Служба", max_length=32, choices=Provider.choices, default=Provider.NOVA_POSHTA)
+    tracking_number = models.CharField("ТТН", max_length=80, blank=True)
+    status = models.CharField("Статус", max_length=24, choices=Status.choices, default=Status.DRAFT)
+    recipient_city = models.CharField("Город", max_length=160, blank=True)
+    recipient_warehouse = models.CharField("Отделение", max_length=255, blank=True)
+    api_payload = models.JSONField("Данные API", default=dict, blank=True)
+    created_at = models.DateTimeField("Создано", auto_now_add=True)
+    updated_at = models.DateTimeField("Обновлено", auto_now=True)
+
+    class Meta:
+        verbose_name = "Отправление"
+        verbose_name_plural = "Отправления"
+        ordering = ["-updated_at"]
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if not self.tracking_number:
+            self.tracking_number = f"NP-{self.pk:08d}"
+            super().save(update_fields=["tracking_number"])
+
+    def __str__(self):
+        return self.tracking_number or f"Отправление #{self.pk}"

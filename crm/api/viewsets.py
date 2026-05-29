@@ -5,33 +5,49 @@ from rest_framework.response import Response
 
 from crm.models import (
     ActivityLog,
+    BotLead,
+    CallLog,
     Client,
+    ClientFile,
     ContactPerson,
     CustomField,
     Deal,
+    DealItem,
     DealStage,
+    DocumentTemplate,
+    InboxMessage,
     IntegrationPlaceholder,
     Notification,
     Order,
+    OrderFile,
     OrderItem,
     Product,
     Profile,
+    Shipment,
     Task,
 )
 
 from .serializers import (
     ActivityLogSerializer,
+    BotLeadSerializer,
+    CallLogSerializer,
+    ClientFileSerializer,
     ClientSerializer,
     ContactPersonSerializer,
     CustomFieldSerializer,
+    DealItemSerializer,
     DealSerializer,
     DealStageSerializer,
+    DocumentTemplateSerializer,
+    InboxMessageSerializer,
     IntegrationPlaceholderSerializer,
     NotificationSerializer,
+    OrderFileSerializer,
     OrderItemSerializer,
     OrderSerializer,
     ProductSerializer,
     ProfileSerializer,
+    ShipmentSerializer,
     TaskSerializer,
     UserSerializer,
 )
@@ -64,6 +80,13 @@ class ContactPersonViewSet(viewsets.ModelViewSet):
     filterset_fields = ["client", "is_primary"]
 
 
+class ClientFileViewSet(viewsets.ModelViewSet):
+    queryset = ClientFile.objects.select_related("client", "uploaded_by")
+    serializer_class = ClientFileSerializer
+    search_fields = ["title", "comment", "client__name"]
+    filterset_fields = ["client", "uploaded_by"]
+
+
 class DealStageViewSet(viewsets.ModelViewSet):
     queryset = DealStage.objects.all()
     serializer_class = DealStageSerializer
@@ -76,6 +99,12 @@ class DealViewSet(viewsets.ModelViewSet):
     search_fields = ["title", "client__name", "source", "description"]
     filterset_fields = ["stage", "owner", "priority", "client"]
     ordering_fields = ["created_at", "updated_at", "amount", "expected_close_date"]
+
+
+class DealItemViewSet(viewsets.ModelViewSet):
+    queryset = DealItem.objects.select_related("deal", "product")
+    serializer_class = DealItemSerializer
+    filterset_fields = ["deal", "product"]
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -98,6 +127,20 @@ class OrderItemViewSet(viewsets.ModelViewSet):
     queryset = OrderItem.objects.select_related("order", "product")
     serializer_class = OrderItemSerializer
     filterset_fields = ["order", "product"]
+
+
+class OrderFileViewSet(viewsets.ModelViewSet):
+    queryset = OrderFile.objects.select_related("order", "uploaded_by")
+    serializer_class = OrderFileSerializer
+    search_fields = ["title", "comment", "order__number"]
+    filterset_fields = ["order", "uploaded_by"]
+
+
+class ShipmentViewSet(viewsets.ModelViewSet):
+    queryset = Shipment.objects.select_related("order", "order__client")
+    serializer_class = ShipmentSerializer
+    search_fields = ["tracking_number", "order__number", "order__client__name", "recipient_city"]
+    filterset_fields = ["provider", "status", "order"]
 
 
 class TaskViewSet(viewsets.ModelViewSet):
@@ -138,3 +181,31 @@ class IntegrationPlaceholderViewSet(viewsets.ModelViewSet):
     queryset = IntegrationPlaceholder.objects.all()
     serializer_class = IntegrationPlaceholderSerializer
     filterset_fields = ["provider", "is_enabled"]
+
+
+class InboxMessageViewSet(viewsets.ModelViewSet):
+    queryset = InboxMessage.objects.select_related("client", "deal")
+    serializer_class = InboxMessageSerializer
+    search_fields = ["sender_name", "sender_handle", "text", "client__name"]
+    filterset_fields = ["channel", "status", "client", "deal"]
+
+
+class BotLeadViewSet(viewsets.ModelViewSet):
+    queryset = BotLead.objects.select_related("client", "deal")
+    serializer_class = BotLeadSerializer
+    search_fields = ["name", "phone", "email", "message"]
+    filterset_fields = ["source", "is_processed"]
+
+
+class CallLogViewSet(viewsets.ModelViewSet):
+    queryset = CallLog.objects.select_related("client", "assigned_to")
+    serializer_class = CallLogSerializer
+    search_fields = ["phone", "client__name", "comment"]
+    filterset_fields = ["direction", "status", "client", "assigned_to"]
+
+
+class DocumentTemplateViewSet(viewsets.ModelViewSet):
+    queryset = DocumentTemplate.objects.all()
+    serializer_class = DocumentTemplateSerializer
+    search_fields = ["name", "body"]
+    filterset_fields = ["template_type", "is_active"]

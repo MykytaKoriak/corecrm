@@ -2,17 +2,25 @@ from django.contrib import admin
 
 from crm.models import (
     ActivityLog,
+    BotLead,
+    CallLog,
     Client,
+    ClientFile,
     ContactPerson,
     CustomField,
     Deal,
+    DealItem,
     DealStage,
+    DocumentTemplate,
+    InboxMessage,
     IntegrationPlaceholder,
     Notification,
     Order,
+    OrderFile,
     OrderItem,
     Product,
     Profile,
+    Shipment,
     Task,
 )
 
@@ -24,6 +32,11 @@ class ContactPersonInline(admin.TabularInline):
 
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
+    extra = 0
+
+
+class DealItemInline(admin.TabularInline):
+    model = DealItem
     extra = 0
 
 
@@ -39,6 +52,12 @@ class ClientAdmin(admin.ModelAdmin):
     list_filter = ("status", "client_type", "owner")
     search_fields = ("name", "phone", "email", "telegram", "instagram")
     inlines = [ContactPersonInline]
+
+
+@admin.register(ClientFile)
+class ClientFileAdmin(admin.ModelAdmin):
+    list_display = ("client", "title", "file", "uploaded_by", "uploaded_at")
+    search_fields = ("client__name", "title", "comment")
 
 
 @admin.register(ContactPerson)
@@ -58,6 +77,12 @@ class DealAdmin(admin.ModelAdmin):
     list_display = ("title", "client", "stage", "owner", "amount", "priority", "updated_at")
     list_filter = ("stage", "priority", "owner")
     search_fields = ("title", "client__name")
+    inlines = [DealItemInline]
+
+
+@admin.register(DealItem)
+class DealItemAdmin(admin.ModelAdmin):
+    list_display = ("deal", "name", "quantity", "price", "discount", "line_total")
 
 
 @admin.register(Order)
@@ -71,6 +96,18 @@ class OrderAdmin(admin.ModelAdmin):
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
     list_display = ("order", "name", "quantity", "price", "discount", "line_total")
+
+
+@admin.register(OrderFile)
+class OrderFileAdmin(admin.ModelAdmin):
+    list_display = ("order", "title", "file", "uploaded_by", "uploaded_at")
+
+
+@admin.register(Shipment)
+class ShipmentAdmin(admin.ModelAdmin):
+    list_display = ("tracking_number", "order", "provider", "status", "recipient_city", "updated_at")
+    list_filter = ("provider", "status")
+    search_fields = ("tracking_number", "order__number", "order__client__name")
 
 
 @admin.register(Product)
@@ -104,3 +141,7 @@ class ActivityLogAdmin(admin.ModelAdmin):
 
 admin.site.register(CustomField)
 admin.site.register(IntegrationPlaceholder)
+admin.site.register(InboxMessage)
+admin.site.register(BotLead)
+admin.site.register(CallLog)
+admin.site.register(DocumentTemplate)

@@ -5,6 +5,10 @@
 <div class="detail-grid">
   <section class="surface hero-card"><div class="avatar-xl deal">{{ deal.probability }}%</div><div><span class="badge-soft {{ deal.priority }}">{{ deal.get_priority_display }}</span><h2>{{ deal.amount }}</h2><p>{{ deal.description|default:"Комментариев пока нет." }}</p></div></section>
   <section class="surface"><div class="section-head"><h2>Параметры</h2></div><dl class="info-list"><dt>Этап</dt><dd>{{ deal.stage }}</dd><dt>Источник</dt><dd>{{ deal.source|default:"-" }}</dd><dt>Закрытие</dt><dd>{{ deal.expected_close_date|date:"d.m.Y"|default:"-" }}</dd><dt>Клиент</dt><dd><a href="{{ deal.client.get_absolute_url }}">{{ deal.client }}</a></dd></dl></section>
+  <section class="surface wide">
+    <div class="section-head"><h2>Товары в сделке</h2><a href="{% url 'crm:deal_item_create' deal.pk %}">Добавить товар</a></div>
+    <table class="data-table compact"><thead><tr><th>Название</th><th>Кол-во</th><th>Цена</th><th>Скидка</th><th>Сумма</th></tr></thead><tbody>{% for item in deal.items.all %}<tr><td>{{ item.name }}</td><td>{{ item.quantity }}</td><td>{{ item.price }}</td><td>{{ item.discount }}</td><td>{{ item.line_total }}</td></tr>{% empty %}<tr><td colspan="5" class="empty">Товары пока не добавлены.</td></tr>{% endfor %}</tbody></table>
+  </section>
   <section class="surface wide"><div class="section-head"><h2>История</h2></div>{% for item in activity %}<div class="timeline-item"><strong>{{ item.get_action_display }}</strong><small>{{ item.created_at|date:"d.m.Y H:i" }} · {{ item.user|default:"Система" }}</small></div>{% empty %}<p class="empty">История пока пустая.</p>{% endfor %}</section>
 </div>
 {% endblock %}

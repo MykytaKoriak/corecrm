@@ -1,15 +1,16 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
-from crm.forms import DealForm
-from crm.models import ActivityLog, Deal, DealStage, Order
+from crm.forms import DealForm, DealItemForm
+from crm.models import ActivityLog, Deal, DealItem, DealStage, Order, OrderItem
 
-from .mixins import CRMLoginRequiredMixin, SearchFilterMixin
+from .mixins import CRMLoginRequiredMixin, SearchFilterMixin, scope_queryset_for_user
 
 
 class DealPipelineView(CRMLoginRequiredMixin, ListView):
@@ -18,7 +19,8 @@ class DealPipelineView(CRMLoginRequiredMixin, ListView):
     context_object_name = "stages"
 
     def get_queryset(self):
-        return DealStage.objects.filter(is_active=True).prefetch_related("deals__client", "deals__owner")
+        deals = scope_queryset_for_user(Deal.objects.select_related("client", "owner"), self.request.user)
+        return DealStage.objects.filter(is_active=True).prefetch_related(Prefetch("deals", queryset=deals))
 
 
 class DealListView(CRMLoginRequiredMixin, SearchFilterMixin, ListView):
@@ -77,10 +79,30 @@ class DealDeleteView(CRMLoginRequiredMixin, DeleteView):
     success_url = reverse_lazy("crm:deals")
 
 
+class DealItemCreateView(CRMLoginRequiredMixin, CreateView):
+    model = DealItem
+    form_class = DealItemForm
+    template_name = "crm/form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        deals = scope_queryset_for_user(Deal.objects.all(), request.user)
+        self.deal = get_object_or_404(deals, pk=kwargs["deal_pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.deal = self.deal
+        messages.success(self.request, "Товар добавлен в сделку.")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return self.deal.get_absolute_url()
+
+
 @require_POST
 @login_required
 def update_deal_stage(request, pk):
-    deal = get_object_or_404(Deal, pk=pk)
+    deals = scope_queryset_for_user(Deal.objects.all(), request.user)
+    deal = get_object_or_404(deals, pk=pk)
     stage = get_object_or_404(DealStage, pk=request.POST.get("stage"))
     deal.stage = stage
     deal.save(update_fields=["stage", "updated_at"])
@@ -93,10 +115,13 @@ def update_deal_stage(request, pk):
 @login_required
 @transaction.atomic
 def create_order_from_deal(request, pk):
-    deal = get_object_or_404(Deal.objects.select_related("client", "owner"), pk=pk)
+    deals = scope_queryset_for_user(Deal.objects.select_related("client", "owner"), request.user)
+    deal = get_object_or_404(deals, pk=pk)
     if hasattr(deal, "order"):
         messages.info(request, "Заказ по этой сделке уже создан.")
         return redirect(deal.order.get_absolute_url())
     order = Order.objects.create(client=deal.client, deal=deal, owner=deal.owner, total=deal.amount, comments=deal.description)
+    for item in deal.items.all():
+        OrderItem.objects.create(order=order, product=item.product, name=item.name, quantity=item.quantity, price=item.price, discount=item.discount)
     messages.success(request, f"Создан заказ {order.number}.")
     return redirect(order.get_absolute_url())

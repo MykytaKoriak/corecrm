@@ -1,0 +1,6 @@
+{% extends "crm/base.html" %}
+{% block title %}Заявки чат-ботов · CRM{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Заявки чат-ботов</h1><p>Прием заявок, сбор контактов и создание сделок.</p></div><a class="btn primary-btn" href="{% url 'crm:bot_lead_create' %}">Новая заявка</a></div>
+<div class="surface table-card"><table class="data-table"><thead><tr><th>Заявка</th><th>Источник</th><th>Контакты</th><th>Клиент</th><th>Сделка</th><th>Статус</th></tr></thead><tbody>{% for lead in leads %}<tr><td><span class="table-title">{{ lead.name }}</span><small>{{ lead.message|truncatechars:90 }}</small></td><td>{{ lead.get_source_display }}</td><td>{{ lead.phone }}<small>{{ lead.email }}</small></td><td>{% if lead.client %}<a href="{{ lead.client.get_absolute_url }}">{{ lead.client }}</a>{% else %}-{% endif %}</td><td>{% if lead.deal %}<a href="{{ lead.deal.get_absolute_url }}">{{ lead.deal }}</a>{% else %}-{% endif %}</td><td><span class="badge-soft {% if lead.is_processed %}done{% endif %}">{% if lead.is_processed %}обработана{% else %}новая{% endif %}</span></td></tr>{% empty %}<tr><td colspan="6" class="empty">Заявок нет.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

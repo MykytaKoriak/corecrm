@@ -1,0 +1,7 @@
+{% extends "crm/base.html" %}
+{% block title %}Звонки · CRM{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Телефония</h1><p>Входящие, пропущенные, записи звонков и задачи на перезвон.</p></div><a class="btn primary-btn" href="{% url 'crm:call_create' %}">Добавить звонок</a></div>
+<form class="filter-bar surface" method="get"><input name="q" value="{{ request.GET.q }}" placeholder="Телефон, клиент, комментарий"><select name="status"><option value="">Все статусы</option><option value="answered">Принят</option><option value="missed">Пропущен</option></select><button class="btn secondary-btn">Фильтр</button></form>
+<div class="surface table-card"><table class="data-table"><thead><tr><th>Звонок</th><th>Клиент</th><th>Ответственный</th><th>Запись</th><th>Задача</th></tr></thead><tbody>{% for call in calls %}<tr><td><span class="table-title">{{ call.phone }}</span><small>{{ call.get_direction_display }} · {{ call.called_at|date:"d.m.Y H:i" }}</small></td><td>{% if call.client %}<a href="{{ call.client.get_absolute_url }}">{{ call.client }}</a>{% else %}-{% endif %}</td><td>{{ call.assigned_to|default:"-" }}</td><td>{% if call.recording %}<a href="{{ call.recording.url }}">Открыть</a>{% else %}-{% endif %}</td><td><span class="badge-soft {% if call.task_created %}done{% endif %}">{% if call.task_created %}создана{% else %}нет{% endif %}</span></td></tr>{% empty %}<tr><td colspan="5" class="empty">Звонков нет.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

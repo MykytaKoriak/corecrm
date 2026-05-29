@@ -1,0 +1,11 @@
+{% extends "crm/base.html" %}
+{% block title %}Аналитика · CRM{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Аналитика</h1><p>Продажи, конверсия, менеджеры, источники и потерянные сделки.</p></div></div>
+<div class="settings-grid">
+  <section class="surface"><div class="section-head"><h2>Менеджеры</h2></div>{% for user in manager_stats %}<div class="settings-row"><span>{{ user.get_full_name|default:user.username }}</span><small>{{ user.deals_count }} сделок · {{ user.deals_amount|default:0 }} · {{ user.orders_count }} заказов</small></div>{% empty %}<p class="empty">Нет данных.</p>{% endfor %}</section>
+  <section class="surface"><div class="section-head"><h2>Источники</h2></div>{% for row in source_stats %}<div class="settings-row"><span>{{ row.source|default:"Не указан" }}</span><small>{{ row.count }} сделок · {{ row.amount|default:0 }}</small></div>{% empty %}<p class="empty">Нет данных.</p>{% endfor %}</section>
+  <section class="surface wide"><div class="section-head"><h2>Потерянные сделки</h2></div><table class="data-table compact"><thead><tr><th>Сделка</th><th>Клиент</th><th>Менеджер</th><th>Сумма</th></tr></thead><tbody>{% for deal in lost_deals %}<tr><td><a href="{{ deal.get_absolute_url }}">{{ deal.title }}</a></td><td>{{ deal.client }}</td><td>{{ deal.owner|default:"-" }}</td><td>{{ deal.amount }}</td></tr>{% empty %}<tr><td colspan="4" class="empty">Потерянных сделок нет.</td></tr>{% endfor %}</tbody></table></section>
+  <section class="surface wide"><div class="section-head"><h2>Задачи по сотрудникам</h2></div>{% for row in task_stats %}<div class="settings-row"><span>{{ row.assigned_to__username|default:"Без ответственного" }}</span><small>{{ row.status }} · {{ row.count }}</small></div>{% empty %}<p class="empty">Нет данных.</p>{% endfor %}</section>
+</div>
+{% endblock %}

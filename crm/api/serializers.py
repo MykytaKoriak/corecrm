@@ -3,17 +3,25 @@ from rest_framework import serializers
 
 from crm.models import (
     ActivityLog,
+    BotLead,
+    CallLog,
     Client,
+    ClientFile,
     ContactPerson,
     CustomField,
     Deal,
+    DealItem,
     DealStage,
+    DocumentTemplate,
+    InboxMessage,
     IntegrationPlaceholder,
     Notification,
     Order,
+    OrderFile,
     OrderItem,
     Product,
     Profile,
+    Shipment,
     Task,
 )
 
@@ -38,6 +46,12 @@ class ContactPersonSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class ClientFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClientFile
+        fields = "__all__"
+
+
 class ClientSerializer(serializers.ModelSerializer):
     contacts = ContactPersonSerializer(many=True, read_only=True)
 
@@ -58,6 +72,12 @@ class DealSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class DealItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DealItem
+        fields = "__all__"
+
+
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
@@ -67,6 +87,18 @@ class ProductSerializer(serializers.ModelSerializer):
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
+        fields = "__all__"
+
+
+class OrderFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderFile
+        fields = "__all__"
+
+
+class ShipmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shipment
         fields = "__all__"
 
 
@@ -106,4 +138,28 @@ class CustomFieldSerializer(serializers.ModelSerializer):
 class IntegrationPlaceholderSerializer(serializers.ModelSerializer):
     class Meta:
         model = IntegrationPlaceholder
+        fields = "__all__"
+
+
+class InboxMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InboxMessage
+        fields = "__all__"
+
+
+class BotLeadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BotLead
+        fields = "__all__"
+
+
+class CallLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CallLog
+        fields = "__all__"
+
+
+class DocumentTemplateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DocumentTemplate
         fields = "__all__"

@@ -22,3 +22,24 @@ class CustomField(models.Model):
 
     def __str__(self):
         return f"{self.entity}: {self.name}"
+
+
+class DocumentTemplate(models.Model):
+    class TemplateType(models.TextChoices):
+        OFFER = "offer", "Коммерческое предложение"
+        INVOICE = "invoice", "Счет"
+        CONTRACT = "contract", "Договор"
+
+    name = models.CharField("Название", max_length=180)
+    template_type = models.CharField("Тип", max_length=32, choices=TemplateType.choices, default=TemplateType.OFFER)
+    body = models.TextField("Шаблон")
+    is_active = models.BooleanField("Активен", default=True)
+    created_at = models.DateTimeField("Создан", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Шаблон документа"
+        verbose_name_plural = "Шаблоны документов"
+        ordering = ["template_type", "name"]
+
+    def __str__(self):
+        return self.name

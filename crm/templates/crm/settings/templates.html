@@ -1,0 +1,6 @@
+{% extends "crm/base.html" %}
+{% block title %}Шаблоны документов · CRM{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Шаблоны документов</h1><p>Коммерческие предложения, счета и договоры.</p></div><a class="btn primary-btn" href="{% url 'crm:document_template_create' %}">Новый шаблон</a></div>
+<div class="surface table-card"><table class="data-table"><thead><tr><th>Название</th><th>Тип</th><th>Статус</th><th>Создан</th></tr></thead><tbody>{% for item in templates %}<tr><td><span class="table-title">{{ item.name }}</span><small>{{ item.body|truncatechars:120 }}</small></td><td>{{ item.get_template_type_display }}</td><td><span class="badge-soft {% if item.is_active %}active{% endif %}">{% if item.is_active %}активен{% else %}выключен{% endif %}</span></td><td>{{ item.created_at|date:"d.m.Y" }}</td></tr>{% empty %}<tr><td colspan="4" class="empty">Шаблонов нет.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

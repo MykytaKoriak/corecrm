@@ -11,15 +11,23 @@ _state = local()
 
 TRACKED_MODELS = {
     "Client",
+    "ClientFile",
     "ContactPerson",
     "Deal",
+    "DealItem",
     "Order",
+    "OrderFile",
     "OrderItem",
     "Product",
     "Task",
     "Notification",
     "CustomField",
+    "DocumentTemplate",
     "IntegrationPlaceholder",
+    "InboxMessage",
+    "BotLead",
+    "CallLog",
+    "Shipment",
 }
 STATUS_FIELDS = {"status", "stage", "payment_status", "delivery_status", "work_status"}
 

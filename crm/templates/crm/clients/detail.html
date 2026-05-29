@@ -28,6 +28,14 @@
     <div class="section-head"><h2>Заказы</h2></div>
     {% for order in client.orders.all %}<a class="list-row" href="{{ order.get_absolute_url }}"><div><strong>{{ order.number }}</strong><small>{{ order.get_work_status_display }}</small></div><span>{{ order.total }}</span></a>{% empty %}<p class="empty">Заказов нет.</p>{% endfor %}
   </section>
+  <section class="surface">
+    <div class="section-head"><h2>Файлы</h2><a href="{% url 'crm:client_file_create' client.pk %}">Добавить</a></div>
+    {% for file in client.files.all %}<a class="list-row" href="{{ file.file.url }}"><div><strong>{{ file.title|default:file.file.name }}</strong><small>{{ file.comment|default:"Без комментария" }} · {{ file.uploaded_at|date:"d.m.Y H:i" }}</small></div></a>{% empty %}<p class="empty">Файлы пока не прикреплены.</p>{% endfor %}
+  </section>
+  <section class="surface">
+    <div class="section-head"><h2>Звонки</h2><a href="{% url 'crm:call_create' %}">Добавить</a></div>
+    {% for call in client.calls.all %}<div class="list-row"><div><strong>{{ call.phone }}</strong><small>{{ call.get_status_display }} · {{ call.called_at|date:"d.m.Y H:i" }}</small></div></div>{% empty %}<p class="empty">Истории звонков нет.</p>{% endfor %}
+  </section>
   <section class="surface wide">
     <div class="section-head"><h2>История</h2></div>
     {% for item in activity %}<div class="timeline-item"><strong>{{ item.get_action_display }}</strong><small>{{ item.created_at|date:"d.m.Y H:i" }} · {{ item.user|default:"Система" }}</small></div>{% empty %}<p class="empty">История пока пустая.</p>{% endfor %}

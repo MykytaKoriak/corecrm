@@ -59,3 +59,20 @@ class ContactPerson(models.Model):
 
     def __str__(self):
         return f"{self.name} · {self.client}"
+
+
+class ClientFile(models.Model):
+    client = models.ForeignKey(Client, verbose_name="Клиент", on_delete=models.CASCADE, related_name="files")
+    file = models.FileField("Файл", upload_to="clients/%Y/%m/")
+    title = models.CharField("Название", max_length=180, blank=True)
+    comment = models.CharField("Комментарий", max_length=255, blank=True)
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="Загрузил", null=True, blank=True, on_delete=models.SET_NULL)
+    uploaded_at = models.DateTimeField("Загружен", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Файл клиента"
+        verbose_name_plural = "Файлы клиентов"
+        ordering = ["-uploaded_at"]
+
+    def __str__(self):
+        return self.title or self.file.name

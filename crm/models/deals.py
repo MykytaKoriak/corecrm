@@ -51,3 +51,38 @@ class Deal(models.Model):
 
     def get_absolute_url(self):
         return reverse("crm:deal_detail", kwargs={"pk": self.pk})
+
+    def recalculate_amount(self):
+        total = sum(item.line_total for item in self.items.all())
+        self.amount = total
+        self.save(update_fields=["amount", "updated_at"])
+
+
+class DealItem(models.Model):
+    deal = models.ForeignKey(Deal, verbose_name="Сделка", on_delete=models.CASCADE, related_name="items")
+    product = models.ForeignKey("crm.Product", verbose_name="Товар", null=True, blank=True, on_delete=models.SET_NULL)
+    name = models.CharField("Название", max_length=255)
+    quantity = models.DecimalField("Количество", max_digits=12, decimal_places=2, default=Decimal("1.00"))
+    price = models.DecimalField("Цена", max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    discount = models.DecimalField("Скидка", max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    line_total = models.DecimalField("Сумма", max_digits=12, decimal_places=2, default=Decimal("0.00"))
+
+    class Meta:
+        verbose_name = "Товар сделки"
+        verbose_name_plural = "Товары сделки"
+
+    def save(self, *args, **kwargs):
+        if self.product and not self.name:
+            self.name = self.product.name
+        self.line_total = max(Decimal("0.00"), (self.quantity * self.price) - self.discount)
+        super().save(*args, **kwargs)
+        self.deal.recalculate_amount()
+
+    def delete(self, *args, **kwargs):
+        deal = self.deal
+        result = super().delete(*args, **kwargs)
+        deal.recalculate_amount()
+        return result
+
+    def __str__(self):
+        return self.name

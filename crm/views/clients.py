@@ -1,11 +1,12 @@
 from django.contrib import messages
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
-from crm.forms import ClientForm, ContactPersonForm
-from crm.models import ActivityLog, Client
+from crm.forms import ClientFileForm, ClientForm, ContactPersonForm
+from crm.models import ActivityLog, Client, ClientFile
 
-from .mixins import CRMLoginRequiredMixin, SearchFilterMixin
+from .mixins import CRMLoginRequiredMixin, SearchFilterMixin, scope_queryset_for_user
 
 
 class ClientListView(CRMLoginRequiredMixin, SearchFilterMixin, ListView):
@@ -59,3 +60,23 @@ class ClientDeleteView(CRMLoginRequiredMixin, DeleteView):
     model = Client
     template_name = "crm/confirm_delete.html"
     success_url = reverse_lazy("crm:clients")
+
+
+class ClientFileCreateView(CRMLoginRequiredMixin, CreateView):
+    model = ClientFile
+    form_class = ClientFileForm
+    template_name = "crm/form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        clients = scope_queryset_for_user(Client.objects.all(), request.user)
+        self.client = get_object_or_404(clients, pk=kwargs["client_pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.client = self.client
+        form.instance.uploaded_by = self.request.user
+        messages.success(self.request, "Файл клиента загружен.")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return self.client.get_absolute_url()
