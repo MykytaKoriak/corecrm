@@ -35,6 +35,11 @@ class TaskCreateView(CRMLoginRequiredMixin, CreateView):
     form_class = TaskForm
     template_name = "crm/form.html"
 
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["assigned_to"] = self.request.user.pk
+        return initial
+
     def form_valid(self, form):
         form.instance.created_by = self.request.user
         if not form.instance.assigned_to:

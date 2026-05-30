@@ -1,6 +1,6 @@
 from django.urls import include, path
 
-from crm.views.clients import ClientCreateView, ClientDeleteView, ClientDetailView, ClientFileCreateView, ClientListView, ClientUpdateView
+from crm.views.clients import ClientCreateView, ClientDeleteView, ClientDetailView, ClientFileCreateView, ClientListView, ClientUpdateView, ContactPersonCreateView
 from crm.views.dashboard import DashboardView, LoginView, LogoutView
 from crm.views.deals import (
     DealCreateView,
@@ -28,7 +28,7 @@ from crm.views.integrations import (
 )
 from crm.views.notifications import NotificationListView, mark_all_notifications_read, mark_notification_read
 from crm.views.orders import OrderCreateView, OrderDeleteView, OrderDetailView, OrderFileCreateView, OrderItemCreateView, OrderListView, OrderUpdateView
-from crm.views.products import ProductCreateView, ProductDeleteView, ProductDetailView, ProductListView, ProductUpdateView
+from crm.views.products import ProductCategoryListView, ProductCreateView, ProductDeleteView, ProductDetailView, ProductListView, ProductUpdateView
 from crm.views.settings import SettingsView
 from crm.views.tasks import TaskCreateView, TaskDeleteView, TaskDetailView, TaskListView, TaskUpdateView, complete_task
 
@@ -44,6 +44,7 @@ urlpatterns = [
     path("clients/<int:pk>/edit/", ClientUpdateView.as_view(extra_context={"title": "Редактировать клиента", "subtitle": "Обновите карточку и контакты", "cancel_url": "crm:clients"}), name="client_update"),
     path("clients/<int:pk>/delete/", ClientDeleteView.as_view(), name="client_delete"),
     path("clients/<int:client_pk>/files/new/", ClientFileCreateView.as_view(extra_context={"title": "Добавить файл клиента", "subtitle": "Документы, фото или служебные файлы", "cancel_url": "crm:clients"}), name="client_file_create"),
+    path("clients/<int:client_pk>/contacts/new/", ContactPersonCreateView.as_view(extra_context={"title": "Новый контакт", "subtitle": "Контактное лицо внутри компании", "cancel_url": "crm:clients"}), name="contact_create"),
     path("deals/", DealPipelineView.as_view(), name="deals"),
     path("deals/list/", DealListView.as_view(), name="deal_list"),
     path("deals/new/", DealCreateView.as_view(extra_context={"title": "Новая сделка", "subtitle": "Клиент, этап, сумма и вероятность", "cancel_url": "crm:deals"}), name="deal_create"),
@@ -61,6 +62,7 @@ urlpatterns = [
     path("orders/<int:order_pk>/items/new/", OrderItemCreateView.as_view(extra_context={"title": "Добавить позицию", "subtitle": "Товар, количество, цена и скидка", "cancel_url": "crm:orders"}), name="order_item_create"),
     path("orders/<int:order_pk>/files/new/", OrderFileCreateView.as_view(extra_context={"title": "Добавить файл заказа", "subtitle": "Фото, документы и служебные файлы", "cancel_url": "crm:orders"}), name="order_file_create"),
     path("products/", ProductListView.as_view(), name="products"),
+    path("products/categories/", ProductCategoryListView.as_view(), name="product_categories"),
     path("products/new/", ProductCreateView.as_view(extra_context={"title": "Новый товар", "subtitle": "Каталог, цена, себестоимость и остаток", "cancel_url": "crm:products"}), name="product_create"),
     path("products/<int:pk>/", ProductDetailView.as_view(), name="product_detail"),
     path("products/<int:pk>/edit/", ProductUpdateView.as_view(extra_context={"title": "Редактировать товар", "subtitle": "Данные каталога и склада", "cancel_url": "crm:products"}), name="product_update"),

@@ -13,6 +13,7 @@ class Product(models.Model):
     name = models.CharField("Название", max_length=255)
     sku = models.CharField("Артикул", max_length=80, unique=True)
     category = models.CharField("Категория", max_length=140, blank=True)
+    description = models.TextField("Описание", blank=True)
     image = models.ImageField("Фото", upload_to="products/%Y/%m/", blank=True)
     price = models.DecimalField("Цена продажи", max_digits=12, decimal_places=2, default=Decimal("0.00"))
     cost = models.DecimalField("Себестоимость", max_digits=12, decimal_places=2, default=Decimal("0.00"))

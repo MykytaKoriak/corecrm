@@ -14,7 +14,7 @@ class Client(models.Model):
         VIP = "vip", "VIP"
         ARCHIVED = "archived", "Архив"
 
-    name = models.CharField("Имя / компания", max_length=255)
+    name = models.CharField("Имя / компания", max_length=255, blank=True)
     client_type = models.CharField("Тип", max_length=16, choices=ClientType.choices, default=ClientType.PERSON)
     status = models.CharField("Статус", max_length=16, choices=Status.choices, default=Status.NEW)
     phone = models.CharField("Основной телефон", max_length=40, blank=True)
@@ -23,6 +23,8 @@ class Client(models.Model):
     extra_emails = models.JSONField("Дополнительные email", default=list, blank=True)
     telegram = models.CharField("Telegram", max_length=120, blank=True)
     instagram = models.CharField("Instagram", max_length=255, blank=True)
+    company_name = models.CharField("Компания", max_length=255, blank=True)
+    primary_contact_name = models.CharField("Имя обратившегося", max_length=160, blank=True)
     delivery_address = models.TextField("Адрес доставки", blank=True)
     legal_address = models.TextField("Юридический адрес", blank=True)
     tags = models.JSONField("Теги", default=list, blank=True)
@@ -37,7 +39,12 @@ class Client(models.Model):
         ordering = ["-updated_at", "-created_at"]
 
     def __str__(self):
-        return self.name
+        return self.company_name or self.name
+
+    def save(self, *args, **kwargs):
+        if not self.name:
+            self.name = self.company_name or self.primary_contact_name
+        super().save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse("crm:client_detail", kwargs={"pk": self.pk})

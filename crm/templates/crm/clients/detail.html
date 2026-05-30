@@ -13,12 +13,18 @@
   <section class="surface">
     <div class="section-head"><h2>Контакты</h2></div>
     <dl class="info-list">
+      <dt>Компания</dt><dd>{{ client.company_name|default:"-" }}</dd>
+      <dt>Обратился</dt><dd>{{ client.primary_contact_name|default:"-" }}</dd>
       <dt>Телефон</dt><dd>{{ client.phone|default:"-" }}</dd>
       <dt>Email</dt><dd>{{ client.email|default:"-" }}</dd>
       <dt>Telegram</dt><dd>{{ client.telegram|default:"-" }}</dd>
       <dt>Instagram</dt><dd>{{ client.instagram|default:"-" }}</dd>
       <dt>Адрес</dt><dd>{{ client.delivery_address|linebreaksbr|default:"-" }}</dd>
     </dl>
+  </section>
+  <section class="surface">
+    <div class="section-head"><h2>Контактные лица</h2><a href="{% url 'crm:contact_create' client.pk %}">Добавить</a></div>
+    {% for contact in client.contacts.all %}<div class="list-row"><div><strong>{{ contact.name }}</strong><small>{{ contact.position|default:"Без должности" }} · {{ contact.phone|default:"телефон не указан" }} · {{ contact.email|default:"email не указан" }}</small></div>{% if contact.is_primary %}<span class="badge-soft active">Основной</span>{% endif %}</div>{% empty %}<p class="empty">Контактные лица пока не добавлены.</p>{% endfor %}
   </section>
   <section class="surface">
     <div class="section-head"><h2>Сделки</h2></div>

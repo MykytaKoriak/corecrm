@@ -20,5 +20,10 @@
     <button class="btn primary-btn">Сохранить</button>
     {% if cancel_url %}<a class="btn secondary-btn" href="{% url cancel_url %}">Отмена</a>{% endif %}
   </div>
+  {% if category_options %}
+  <datalist id="product-categories">
+    {% for category in category_options %}<option value="{{ category }}"></option>{% endfor %}
+  </datalist>
+  {% endif %}
 </form>
 {% endblock %}

@@ -75,6 +75,8 @@ class OrderItem(models.Model):
     def save(self, *args, **kwargs):
         if self.product and not self.name:
             self.name = self.product.name
+        if self.product and not self.price:
+            self.price = self.product.price
         self.line_total = max(Decimal("0.00"), (self.quantity * self.price) - self.discount)
         super().save(*args, **kwargs)
         self.order.recalculate_total()

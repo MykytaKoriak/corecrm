@@ -1,10 +1,20 @@
 {% extends "crm/base.html" %}
 {% block title %}{{ deal.title }} · CRM{% endblock %}
 {% block content %}
-<div class="page-head"><div><h1>{{ deal.title }}</h1><p>{{ deal.client }} · {{ deal.stage }} · {{ deal.owner|default:"-" }}</p></div><div class="head-actions"><a class="btn secondary-btn" href="{% url 'crm:deal_update' deal.pk %}">Редактировать</a><form method="post" action="{% url 'crm:deal_create_order' deal.pk %}">{% csrf_token %}<button class="btn primary-btn">Создать заказ</button></form></div></div>
+<div class="page-head">
+  <div><h1>{{ deal.title }}</h1><p>{{ deal.client }} · {{ deal.stage }} · {{ deal.owner|default:"-" }}</p></div>
+  <div class="head-actions">
+    <a class="btn secondary-btn" href="{% url 'crm:deal_update' deal.pk %}">Редактировать</a>
+    {% if deal.order %}
+      <a class="btn primary-btn" href="{{ deal.order.get_absolute_url }}">Открыть заказ</a>
+    {% else %}
+      <form method="post" action="{% url 'crm:deal_create_order' deal.pk %}">{% csrf_token %}<button class="btn primary-btn">Создать заказ</button></form>
+    {% endif %}
+  </div>
+</div>
 <div class="detail-grid">
-  <section class="surface hero-card"><div class="avatar-xl deal">{{ deal.probability }}%</div><div><span class="badge-soft {{ deal.priority }}">{{ deal.get_priority_display }}</span><h2>{{ deal.amount }}</h2><p>{{ deal.description|default:"Комментариев пока нет." }}</p></div></section>
-  <section class="surface"><div class="section-head"><h2>Параметры</h2></div><dl class="info-list"><dt>Этап</dt><dd>{{ deal.stage }}</dd><dt>Источник</dt><dd>{{ deal.source|default:"-" }}</dd><dt>Закрытие</dt><dd>{{ deal.expected_close_date|date:"d.m.Y"|default:"-" }}</dd><dt>Клиент</dt><dd><a href="{{ deal.client.get_absolute_url }}">{{ deal.client }}</a></dd></dl></section>
+  <section class="surface hero-card"><div class="avatar-xl deal">₴</div><div><span class="badge-soft {{ deal.priority }}">{{ deal.get_priority_display }}</span><h2>{{ deal.amount }}</h2><p>{{ deal.description|default:"Комментариев пока нет." }}</p></div></section>
+  <section class="surface"><div class="section-head"><h2>Параметры</h2></div><dl class="info-list"><dt>Этап</dt><dd>{{ deal.stage }}</dd><dt>Источник</dt><dd>{{ deal.get_source_display|default:"-" }}</dd><dt>Закрытие</dt><dd>{{ deal.expected_close_date|date:"d.m.Y"|default:"-" }}</dd><dt>Клиент</dt><dd><a href="{{ deal.client.get_absolute_url }}">{{ deal.client }}</a></dd><dt>Заказ</dt><dd>{% if deal.order %}<a href="{{ deal.order.get_absolute_url }}">{{ deal.order.number }}</a>{% else %}-{% endif %}</dd></dl></section>
   <section class="surface wide">
     <div class="section-head"><h2>Товары в сделке</h2><a href="{% url 'crm:deal_item_create' deal.pk %}">Добавить товар</a></div>
     <table class="data-table compact"><thead><tr><th>Название</th><th>Кол-во</th><th>Цена</th><th>Скидка</th><th>Сумма</th></tr></thead><tbody>{% for item in deal.items.all %}<tr><td>{{ item.name }}</td><td>{{ item.quantity }}</td><td>{{ item.price }}</td><td>{{ item.discount }}</td><td>{{ item.line_total }}</td></tr>{% empty %}<tr><td colspan="5" class="empty">Товары пока не добавлены.</td></tr>{% endfor %}</tbody></table>

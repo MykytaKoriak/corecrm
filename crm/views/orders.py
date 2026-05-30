@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
@@ -15,11 +16,16 @@ class OrderListView(CRMLoginRequiredMixin, SearchFilterMixin, ListView):
     context_object_name = "orders"
     paginate_by = 20
     search_fields = ["number", "client__name"]
-    filter_fields = {"payment": "payment_status", "delivery": "delivery_status", "work": "work_status"}
+    filter_fields = {"payment": "payment_status", "delivery": "delivery_status", "work": "work_status", "owner": "owner"}
 
     def get_queryset(self):
         qs = Order.objects.select_related("client", "owner", "deal")
         return self.apply_search_and_filters(qs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["managers"] = get_user_model().objects.filter(crm_orders__isnull=False).distinct().order_by("username")
+        return context
 
 
 class OrderDetailView(CRMLoginRequiredMixin, DetailView):
@@ -38,11 +44,23 @@ class OrderCreateView(CRMLoginRequiredMixin, CreateView):
     form_class = OrderForm
     template_name = "crm/form.html"
 
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["owner"] = self.request.user.pk
+        return initial
+
     def form_valid(self, form):
         if not form.instance.owner:
             form.instance.owner = self.request.user
+        if form.instance.deal and not form.instance.client_id:
+            form.instance.client = form.instance.deal.client
+        response = super().form_valid(form)
+        if self.object.deal and not self.object.items.exists():
+            for item in self.object.deal.items.all():
+                OrderItem.objects.create(order=self.object, product=item.product, name=item.name, quantity=item.quantity, price=item.price, discount=item.discount)
+            self.object.recalculate_total()
         messages.success(self.request, "Заказ создан.")
-        return super().form_valid(form)
+        return response
 
 
 class OrderUpdateView(CRMLoginRequiredMixin, UpdateView):

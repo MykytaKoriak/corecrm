@@ -13,7 +13,7 @@
     <tbody>
     {% for client in clients %}
     <tr>
-      <td><a class="table-title" href="{{ client.get_absolute_url }}">{{ client.name }}</a><small>{{ client.get_client_type_display }}</small></td>
+      <td><a class="table-title" href="{{ client.get_absolute_url }}">{{ client.company_name|default:client.name }}</a><small>{{ client.primary_contact_name|default:client.get_client_type_display }}</small></td>
       <td><span>{{ client.phone|default:"-" }}</span><small>{{ client.email|default:"" }}</small></td>
       <td>{{ client.owner|default:"-" }}</td>
       <td>{% for tag in client.tags %}<span class="badge-soft">{{ tag }}</span>{% empty %}<span class="muted">-</span>{% endfor %}</td>

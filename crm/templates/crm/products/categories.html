@@ -1,0 +1,32 @@
+{% extends "crm/base.html" %}
+{% block title %}Категории товаров · CRM{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Категории товаров</h1><p>Сводка по созданным категориям и товарам внутри них.</p></div>
+  <a class="btn secondary-btn" href="{% url 'crm:products' %}">Назад к товарам</a>
+</div>
+<form class="filter-bar surface" method="get">
+  <select name="category">
+    <option value="">Все категории</option>
+    {% for item in categories %}<option value="{{ item.category }}" {% if selected_category == item.category %}selected{% endif %}>{{ item.category }} · {{ item.count }}</option>{% endfor %}
+  </select>
+  <button class="btn secondary-btn">Фильтр</button>
+</form>
+<div class="surface table-card">
+  <table class="data-table">
+    <thead><tr><th>Категория</th><th>Товар</th><th>Артикул</th><th>Статус</th><th>Цена</th><th>Остаток</th></tr></thead>
+    <tbody>
+      {% for product in products %}
+      <tr>
+        <td>{{ product.category }}</td>
+        <td><a class="table-title" href="{{ product.get_absolute_url }}">{{ product.name }}</a><small>{{ product.description|truncatechars:80 }}</small></td>
+        <td>{{ product.sku }}</td>
+        <td><span class="badge-soft {{ product.status }}">{{ product.get_status_display }}</span></td>
+        <td>{{ product.price }}</td>
+        <td>{{ product.stock }}</td>
+      </tr>
+      {% empty %}<tr><td colspan="6" class="empty">Категории пока не созданы.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

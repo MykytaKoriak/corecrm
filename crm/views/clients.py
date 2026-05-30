@@ -4,7 +4,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from crm.forms import ClientFileForm, ClientForm, ContactPersonForm
-from crm.models import ActivityLog, Client, ClientFile
+from crm.models import ActivityLog, Client, ClientFile, ContactPerson
 
 from .mixins import CRMLoginRequiredMixin, SearchFilterMixin, scope_queryset_for_user
 
@@ -39,11 +39,19 @@ class ClientCreateView(CRMLoginRequiredMixin, CreateView):
     form_class = ClientForm
     template_name = "crm/form.html"
 
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["owner"] = self.request.user.pk
+        return initial
+
     def form_valid(self, form):
         if not form.instance.owner:
             form.instance.owner = self.request.user
+        response = super().form_valid(form)
+        if form.instance.primary_contact_name and not form.instance.contacts.exists():
+            ContactPerson.objects.create(client=form.instance, name=form.instance.primary_contact_name, phone=form.instance.phone, email=form.instance.email, is_primary=True)
         messages.success(self.request, "Клиент создан.")
-        return super().form_valid(form)
+        return response
 
 
 class ClientUpdateView(CRMLoginRequiredMixin, UpdateView):
@@ -76,6 +84,25 @@ class ClientFileCreateView(CRMLoginRequiredMixin, CreateView):
         form.instance.client = self.client
         form.instance.uploaded_by = self.request.user
         messages.success(self.request, "Файл клиента загружен.")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return self.client.get_absolute_url()
+
+
+class ContactPersonCreateView(CRMLoginRequiredMixin, CreateView):
+    model = ContactPerson
+    form_class = ContactPersonForm
+    template_name = "crm/form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        clients = scope_queryset_for_user(Client.objects.all(), request.user)
+        self.client = get_object_or_404(clients, pk=kwargs["client_pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.client = self.client
+        messages.success(self.request, "Контакт добавлен.")
         return super().form_valid(form)
 
     def get_success_url(self):

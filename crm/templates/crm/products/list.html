@@ -1,13 +1,34 @@
 {% extends "crm/base.html" %}
 {% block title %}Товары · CRM{% endblock %}
 {% block content %}
-<div class="page-head"><div><h1>Товары</h1><p>Каталог товаров и услуг с ценами и остатками.</p></div><a class="btn primary-btn" href="{% url 'crm:product_create' %}">Новый товар</a></div>
-<form class="filter-bar surface" method="get"><input name="q" value="{{ request.GET.q }}" placeholder="Название, артикул или категория"><select name="status"><option value="">Все статусы</option><option value="active">Активен</option><option value="draft">Черновик</option><option value="archived">Архив</option></select><button class="btn secondary-btn">Фильтр</button></form>
+<div class="page-head">
+  <div><h1>Товары</h1><p>Каталог товаров и услуг с ценами, остатками и статусами.</p></div>
+  <div class="head-actions">
+    <a class="btn secondary-btn" href="{% url 'crm:product_categories' %}">Категории</a>
+    {% if can_edit_products %}<a class="btn primary-btn" href="{% url 'crm:product_create' %}">Новый товар</a>{% endif %}
+  </div>
+</div>
+<form class="filter-bar surface" method="get">
+  <input name="q" value="{{ request.GET.q }}" placeholder="Название, артикул или категория">
+  <select name="status">
+    <option value="">Все статусы</option>
+    <option value="active" {% if request.GET.status == "active" %}selected{% endif %}>Активен</option>
+    <option value="draft" {% if request.GET.status == "draft" %}selected{% endif %}>Черновик</option>
+    <option value="archived" {% if request.GET.status == "archived" %}selected{% endif %}>Архив</option>
+  </select>
+  <select name="category">
+    <option value="">Все категории</option>
+    {% for item in categories %}<option value="{{ item.category }}" {% if request.GET.category == item.category %}selected{% endif %}>{{ item.category }}</option>{% endfor %}
+  </select>
+  <button class="btn secondary-btn">Фильтр</button>
+</form>
 <div class="product-grid">
 {% for product in products %}
-  <a class="product-card surface" href="{{ product.get_absolute_url }}">
+  <a class="product-card surface status-{{ product.status }}" href="{% if can_edit_products %}{% url 'crm:product_update' product.pk %}{% else %}{{ product.get_absolute_url }}{% endif %}">
+    <span class="status-ribbon {{ product.status }}">{{ product.get_status_display }}</span>
     <div class="product-thumb">{% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}">{% else %}<span>{{ product.name|slice:":1"|upper }}</span>{% endif %}</div>
     <div><strong>{{ product.name }}</strong><small>{{ product.sku }} · {{ product.category|default:"Без категории" }}</small></div>
+    {% if product.description %}<p class="product-description">{{ product.description|truncatechars:90 }}</p>{% endif %}
     <footer><span>{{ product.price }}</span><small>остаток {{ product.stock }}</small></footer>
   </a>
 {% empty %}<div class="surface empty">Товары пока не добавлены.</div>{% endfor %}

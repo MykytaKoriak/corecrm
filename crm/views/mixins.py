@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 
 
@@ -53,6 +54,16 @@ class CRMLoginRequiredMixin(LoginRequiredMixin):
     def get_queryset(self):
         queryset = super().get_queryset()
         return self.scope_queryset(queryset)
+
+    def can_edit_products(self):
+        return self.request.user.is_superuser or self.user_role() in {"admin", "director", "production"}
+
+
+class ProductEditRequiredMixin(CRMLoginRequiredMixin):
+    def dispatch(self, request, *args, **kwargs):
+        if not (request.user.is_superuser or self.user_role() in {"admin", "director", "production"}):
+            raise PermissionDenied("Недостаточно прав для редактирования товаров.")
+        return super().dispatch(request, *args, **kwargs)
 
 
 class SearchFilterMixin:

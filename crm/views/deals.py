@@ -54,6 +54,7 @@ class DealCreateView(CRMLoginRequiredMixin, CreateView):
 
     def get_initial(self):
         initial = super().get_initial()
+        initial["owner"] = self.request.user.pk
         if self.request.GET.get("client"):
             initial["client"] = self.request.GET["client"]
         return initial
@@ -63,6 +64,8 @@ class DealCreateView(CRMLoginRequiredMixin, CreateView):
             form.instance.owner = self.request.user
         if not form.instance.stage:
             form.instance.stage = DealStage.objects.filter(is_active=True).first()
+        if not form.instance.title and form.instance.client_id:
+            form.instance.title = form.instance.default_title()
         messages.success(self.request, "Сделка создана.")
         return super().form_valid(form)
 

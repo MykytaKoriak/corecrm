@@ -48,7 +48,7 @@ class ProfileAdmin(admin.ModelAdmin):
 
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
-    list_display = ("name", "status", "client_type", "phone", "email", "owner", "updated_at")
+    list_display = ("name", "company_name", "primary_contact_name", "status", "client_type", "phone", "email", "owner", "updated_at")
     list_filter = ("status", "client_type", "owner")
     search_fields = ("name", "phone", "email", "telegram", "instagram")
     inlines = [ContactPersonInline]
@@ -114,7 +114,7 @@ class ShipmentAdmin(admin.ModelAdmin):
 class ProductAdmin(admin.ModelAdmin):
     list_display = ("name", "sku", "category", "price", "cost", "stock", "status")
     list_filter = ("status", "category")
-    search_fields = ("name", "sku")
+    search_fields = ("name", "sku", "category", "description")
 
 
 @admin.register(Task)

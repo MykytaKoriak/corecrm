@@ -28,11 +28,20 @@ class Deal(models.Model):
         MEDIUM = "medium", "Средний"
         HIGH = "high", "Высокий"
 
-    title = models.CharField("Название", max_length=255)
+    class Source(models.TextChoices):
+        WEBSITE = "site", "Сайт"
+        WEBSITE_FORM = "website", "Сайт"
+        INSTAGRAM = "instagram", "Instagram"
+        TELEGRAM = "telegram", "Telegram"
+        PHONE = "phone", "Телефон"
+        REFERRAL = "referral", "Рекомендация"
+        MANUAL = "manual", "Ручной ввод"
+
+    title = models.CharField("Название", max_length=255, blank=True)
     client = models.ForeignKey("crm.Client", verbose_name="Клиент", on_delete=models.CASCADE, related_name="deals")
     stage = models.ForeignKey(DealStage, verbose_name="Этап", null=True, blank=True, on_delete=models.SET_NULL, related_name="deals")
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="Ответственный", null=True, blank=True, on_delete=models.SET_NULL, related_name="crm_deals")
-    source = models.CharField("Источник", max_length=120, blank=True)
+    source = models.CharField("Источник", max_length=32, choices=Source.choices, blank=True)
     priority = models.CharField("Приоритет", max_length=16, choices=Priority.choices, default=Priority.MEDIUM)
     amount = models.DecimalField("Сумма", max_digits=12, decimal_places=2, default=Decimal("0.00"))
     probability = models.PositiveSmallIntegerField("Вероятность, %", default=20)
@@ -48,6 +57,16 @@ class Deal(models.Model):
 
     def __str__(self):
         return self.title
+
+    def default_title(self, product_name=""):
+        if product_name:
+            return f"{self.client} · {product_name}"
+        return f"{self.client} · новая сделка"
+
+    def save(self, *args, **kwargs):
+        if not self.title and self.client_id:
+            self.title = self.default_title()
+        super().save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse("crm:deal_detail", kwargs={"pk": self.pk})
@@ -74,8 +93,14 @@ class DealItem(models.Model):
     def save(self, *args, **kwargs):
         if self.product and not self.name:
             self.name = self.product.name
+        if self.product and not self.price:
+            self.price = self.product.price
         self.line_total = max(Decimal("0.00"), (self.quantity * self.price) - self.discount)
         super().save(*args, **kwargs)
+        default_title = self.deal.default_title()
+        if self.deal.title == default_title:
+            self.deal.title = self.deal.default_title(self.name)
+            self.deal.save(update_fields=["title", "updated_at"])
         self.deal.recalculate_amount()
 
     def delete(self, *args, **kwargs):

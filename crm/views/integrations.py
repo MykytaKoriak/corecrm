@@ -92,7 +92,7 @@ class BotLeadCreateView(CRMLoginRequiredMixin, CreateView):
                 client=client,
                 stage=stage,
                 owner=self.request.user,
-                source=self.object.get_source_display(),
+                source=self.object.source,
                 description=self.object.message,
             )
             self.object.client = client

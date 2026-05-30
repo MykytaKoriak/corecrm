@@ -14,6 +14,8 @@ class ClientForm(StyledFormMixin, forms.ModelForm):
         model = Client
         fields = [
             "name",
+            "company_name",
+            "primary_contact_name",
             "client_type",
             "status",
             "owner",
@@ -36,6 +38,8 @@ class ClientForm(StyledFormMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields["name"].required = False
+        self.fields["name"].help_text = "Можно оставить пустым: CRM возьмет название компании или имя обратившегося."
         if self.instance.pk:
             self.fields["extra_phones_text"].initial = ", ".join(self.instance.extra_phones)
             self.fields["extra_emails_text"].initial = ", ".join(self.instance.extra_emails)
