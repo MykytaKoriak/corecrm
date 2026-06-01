@@ -8,7 +8,7 @@ from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from crm.forms import DealForm, DealItemForm
-from crm.models import ActivityLog, Deal, DealItem, DealStage, Order, OrderItem
+from crm.models import ActivityLog, Client, ContactPerson, Deal, DealItem, DealStage, Order, OrderItem
 
 from .mixins import CRMLoginRequiredMixin, SearchFilterMixin, scope_queryset_for_user
 
@@ -60,6 +60,24 @@ class DealCreateView(CRMLoginRequiredMixin, CreateView):
         return initial
 
     def form_valid(self, form):
+        if not form.instance.client_id and form.cleaned_data.get("new_client_name"):
+            client = Client.objects.create(
+                name=form.cleaned_data["new_client_name"],
+                company_name=form.cleaned_data.get("new_client_company", ""),
+                primary_contact_name=form.cleaned_data["new_client_name"],
+                phone=form.cleaned_data.get("new_client_phone", ""),
+                email=form.cleaned_data.get("new_client_email", ""),
+                owner=self.request.user,
+                status=Client.Status.NEW,
+            )
+            ContactPerson.objects.create(
+                client=client,
+                name=form.cleaned_data["new_client_name"],
+                phone=form.cleaned_data.get("new_client_phone", ""),
+                email=form.cleaned_data.get("new_client_email", ""),
+                is_primary=True,
+            )
+            form.instance.client = client
         if not form.instance.owner:
             form.instance.owner = self.request.user
         if not form.instance.stage:

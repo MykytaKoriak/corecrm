@@ -18,6 +18,7 @@
   </div>
   <div class="form-actions">
     <button class="btn primary-btn">Сохранить</button>
+    {% if object and object.get_absolute_url %}<a class="btn secondary-btn" href="{{ object.get_absolute_url }}">К карточке</a>{% endif %}
     {% if cancel_url %}<a class="btn secondary-btn" href="{% url cancel_url %}">Отмена</a>{% endif %}
   </div>
   {% if category_options %}

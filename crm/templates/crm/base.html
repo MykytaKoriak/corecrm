@@ -25,24 +25,18 @@
       <span>CRM Studio</span>
     </a>
     <nav class="side-nav">
-      <a href="{% url 'crm:dashboard' %}">Dashboard</a>
-      <a href="{% url 'crm:clients' %}">Клиенты</a>
-      <a href="{% url 'crm:deals' %}">Сделки</a>
-      <a href="{% url 'crm:orders' %}">Заказы</a>
-      <a href="{% url 'crm:products' %}">Товары</a>
-      <a href="{% url 'crm:tasks' %}">Задачи</a>
-      <a href="{% url 'crm:notifications' %}">Уведомления</a>
-      <a href="{% url 'crm:inbox' %}">Inbox</a>
-      <a href="{% url 'crm:calls' %}">Звонки</a>
-      <a href="{% url 'crm:shipments' %}">Доставка</a>
-      <a href="{% url 'crm:analytics' %}">Аналитика</a>
-      <a href="{% url 'crm:settings' %}">Настройки</a>
+      <a class="{% if request.path == '/' %}active{% endif %}" href="{% url 'crm:dashboard' %}">Dashboard</a>
+      <a class="{% if '/clients/' in request.path %}active{% endif %}" href="{% url 'crm:clients' %}">Клиенты</a>
+      <a class="{% if '/deals/' in request.path %}active{% endif %}" href="{% url 'crm:deals' %}">Сделки</a>
+      <a class="{% if '/orders/' in request.path or '/shipments/' in request.path %}active{% endif %}" href="{% url 'crm:orders' %}">Заказы</a>
+      <a class="{% if '/products/' in request.path %}active{% endif %}" href="{% url 'crm:products' %}">Товары</a>
+      <a class="{% if '/tasks/' in request.path %}active{% endif %}" href="{% url 'crm:tasks' %}">Задачи</a>
+      <a class="{% if '/notifications/' in request.path %}active{% endif %}" href="{% url 'crm:notifications' %}">Уведомления</a>
+      <a class="{% if '/inbox/' in request.path %}active{% endif %}" href="{% url 'crm:inbox' %}">Inbox</a>
+      <a class="{% if '/calls/' in request.path %}active{% endif %}" href="{% url 'crm:calls' %}">Звонки</a>
+      <a class="{% if '/analytics/' in request.path %}active{% endif %}" href="{% url 'crm:analytics' %}">Аналитика</a>
+      <a class="{% if '/settings/' in request.path or '/document-templates/' in request.path %}active{% endif %}" href="{% url 'crm:settings' %}">Настройки</a>
     </nav>
-    <div class="sidebar-card">
-      <span>Сегодня</span>
-      <strong>{% now "d.m.Y" %}</strong>
-      <small>Рабочая панель менеджера</small>
-    </div>
   </aside>
   <div class="main-area">
     <header class="topbar">
