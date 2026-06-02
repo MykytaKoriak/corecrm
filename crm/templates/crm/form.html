@@ -3,6 +3,10 @@
 {% block content %}
 <div class="page-head">
   <div><h1>{{ title|default:"Форма" }}</h1><p>{{ subtitle|default:"Заполните поля и сохраните изменения." }}</p></div>
+  <div class="head-actions">
+    {% if object and object.get_absolute_url %}<a class="btn secondary-btn" href="{{ object.get_absolute_url }}">К карточке</a>{% endif %}
+    {% if cancel_url %}<a class="btn secondary-btn" href="{% url cancel_url %}">Назад к списку</a>{% endif %}
+  </div>
 </div>
 <form method="post" enctype="multipart/form-data" class="surface form-surface">
   {% csrf_token %}
@@ -18,8 +22,6 @@
   </div>
   <div class="form-actions">
     <button class="btn primary-btn">Сохранить</button>
-    {% if object and object.get_absolute_url %}<a class="btn secondary-btn" href="{{ object.get_absolute_url }}">К карточке</a>{% endif %}
-    {% if cancel_url %}<a class="btn secondary-btn" href="{% url cancel_url %}">Отмена</a>{% endif %}
   </div>
   {% if category_options %}
   <datalist id="product-categories">
